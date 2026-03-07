@@ -60,5 +60,7 @@ Este é um papel de parede dinâmico para o **Wallpaper Engine** que simula um o
 3. Arraste o arquivo `index.html` para a janela do editor.
 4. Salve e aplique.
 
+   LINK STEAM: https://steamcommunity.com/sharedfiles/filedetails/?id=3680611594&snr=___
+
 
 <img width="1611" height="1042" alt="image" src="https://github.com/user-attachments/assets/e40fb7d9-4e66-48b0-9054-dea540a1e633" />
