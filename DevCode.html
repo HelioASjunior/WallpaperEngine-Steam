@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Python Dev HUD - High Contrast</title>
+    <style>
+        :root {
+            --primary: #58a6ff;
+            --accent: #d2a8ff;
+            --bg: #05070a;
+            --panel-bg: rgba(13, 17, 23, 0.85);
+            --font: 'Cascadia Code', 'Courier New', monospace;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg); font-family: var(--font);
+            overflow: hidden; color: var(--primary);
+        }
+
+        #particle-canvas { 
+            position: absolute; 
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; 
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #code-section {
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(90deg, rgba(5,7,10,0.8) 0%, transparent 100%);
+        }
+
+        #code-container {
+            font-size: 1.35rem;
+            line-height: 1.7;
+            white-space: pre;
+            text-shadow: 0 0 15px rgba(88, 166, 255, 0.6);
+        }
+
+        #side-panel {
+            background: var(--panel-bg);
+            border-left: 2px solid rgba(88, 166, 255, 0.3);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            backdrop-filter: blur(15px);
+            pointer-events: auto;
+        }
+
+        #clock-container { text-align: center; border-bottom: 1px solid rgba(88, 166, 255, 0.2); padding-bottom: 20px; }
+        #clock-time { font-size: 3.5rem; font-weight: bold; color: white; text-shadow: 0 0 10px var(--primary); }
+        #clock-date { font-size: 0.85rem; opacity: 0.8; text-transform: uppercase; color: var(--primary); }
+
+        .stat-box { background: rgba(0,0,0,0.5); border: 1px solid rgba(88, 166, 255, 0.2); padding: 18px; border-radius: 8px; }
+        .stat-title { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; color: var(--accent); font-weight: bold; }
+        
+        .bar-container { width: 100%; height: 6px; background: #161b22; margin: 8px 0 15px 0; border-radius: 3px; }
+        .bar-fill { height: 100%; background: var(--primary); transition: width 0.5s ease; box-shadow: 0 0 15px var(--primary); border-radius: 3px; }
+
+        #log-console {
+            flex-grow: 1;
+            font-size: 0.75rem;
+            overflow: hidden;
+            color: #c9d1d9;
+            display: flex;
+            flex-direction: column-reverse;
+            line-height: 1.8;
+        }
+
+        .keyword { color: #ff7b72; font-weight: bold; }
+        .function { color: #d2a8ff; }
+        .string { color: #a5d6ff; }
+        .comment { color: #8b949e; font-style: italic; }
+        .cursor { display: inline-block; width: 12px; height: 1.4rem; background: var(--primary); animation: blink 0.8s infinite; vertical-align: middle; box-shadow: 0 0 10px var(--primary); }
+
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<div class="main-layout">
+    <div id="code-section">
+        <div id="code-container"></div><span class="cursor"></span>
+    </div>
+
+    <div id="side-panel">
+        <div id="clock-container">
+            <div id="clock-time">00:00</div>
+            <div id="clock-date">SISTEMA ONLINE</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">System Monitor</div>
+            <div style="display:flex; justify-content:space-between; font-size: 0.85rem;"><span>CPU Load</span> <span id="cpu-val">0%</span></div>
+            <div class="bar-container"><div id="cpu-bar" class="bar-fill" style="width: 0%"></div></div>
+            
+            <div style="display:flex; justify-content:space-between; font-size: 0.85rem;"><span>Memory RAM</span> <span id="mem-val">0%</span></div>
+            <div class="bar-container"><div id="mem-bar" class="bar-fill" style="width: 0%"></div></div>
+        </div>
+
+        <div class="stat-box" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <div class="stat-title">Real-time Logs</div>
+            <div id="log-console"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- MOTOR DE PARTÍCULAS (MAIS FORTES E MAIORES) ---
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+
+    const config = {
+        particleCount: 85,        // Ligeiramente menos pontos para focar na força de cada um
+        connectionDist: 180,      // Maior alcance de conexão
+        particleSpeed: 0.5,       // Velocidade moderada
+        particleSize: 2.5,        // PONTOS MAIORES (Era 1.5)
+        lineOpacityMult: 0.6      // LINHAS MAIS FORTES (Era 0.4)
+    };
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * w;
+            this.y = Math.random() * h;
+            this.vx = (Math.random() - 0.5) * config.particleSpeed;
+            this.vy = (Math.random() - 0.5) * config.particleSpeed;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0 || this.x > w) this.vx *= -1;
+            if (this.y < 0 || this.y > h) this.vy *= -1;
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < config.particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < particles.length; i++) {
+            let p1 = particles[i];
+            p1.update();
+            
+            // Desenha o ponto (Mais forte)
+            ctx.fillStyle = "rgba(88, 166, 255, 0.7)"; 
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, config.particleSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Brilho ao redor do ponto
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "rgba(88, 166, 255, 0.5)";
+
+            for (let j = i + 1; j < particles.length; j++) {
+                let p2 = particles[j];
+                let dx = p1.x - p2.x;
+                let dy = p1.y - p2.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (dist < config.connectionDist) {
+                    // Linhas mais opacas e grossas
+                    ctx.strokeStyle = `rgba(88, 166, 255, ${(1 - dist/config.connectionDist) * config.lineOpacityMult})`;
+                    ctx.lineWidth = 1.2; 
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+            ctx.shadowBlur = 0; // Reseta o brilho para o resto
+        }
+        requestAnimationFrame(draw);
+    }
+    initParticles();
+    draw();
+
+    // --- RELÓGIO E STATS ---
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock-time').innerText = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('clock-date').innerText = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function updateStats() {
+        const cpu = Math.floor(Math.random() * 20) + 10;
+        const mem = Math.floor(Math.random() * 10) + 70;
+        document.getElementById('cpu-val').innerText = cpu + "%";
+        document.getElementById('cpu-bar').style.width = cpu + "%";
+        document.getElementById('mem-val').innerText = mem + "%";
+        document.getElementById('mem-bar').style.width = mem + "%";
+        
+        const logs = ["NODE_ACTIVE: Cluster 7", "PACKET_RECV: 1.2ms", "AUTH_KEY: Validated", "DATA_SYNC: 100%", "ROOT_ACCESS: Denied"];
+        const entry = document.createElement('div');
+        entry.innerHTML = `<span style="color:white; opacity:0.5">[${new Date().toLocaleTimeString('pt-BR')}]</span> <span style="color:var(--accent)">INF</span> ${logs[Math.floor(Math.random()*logs.length)]}`;
+        const logBox = document.getElementById('log-console');
+        logBox.prepend(entry);
+        if(logBox.children.length > 20) logBox.lastChild.remove();
+    }
+    setInterval(updateStats, 2000);
+
+    // --- CÓDIGO PYTHON ---
+    const scripts = [
+        `<span class="keyword">from</span> brain <span class="keyword">import</span> logic\n<span class="keyword">import</span> security_v2 <span class="keyword">as</span> sec`,
+        `\n\n<span class="keyword">def</span> <span class="function">override_protocol</span>(token):\n    <span class="comment"># Bypass do firewall principal</span>\n    <span class="keyword">if</span> sec.verify(token):\n        <span class="keyword">return</span> logic.execute_payload()`,
+        `\n\n<span class="keyword">async def</span> <span class="function">monitor_nodes</span>():\n    <span class="keyword">while</span> <span class="keyword">True</span>:\n        status = <span class="keyword">await</span> network.ping_all()\n        print(f<span class="string">"Nodes: {status}"</span>)`,
+        `\n\n<span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:\n    print(<span class="string">"System High Contrast Mode: ON"</span>)\n    monitor_nodes().run()`
+    ];
+
+    let sIdx = 0, cIdx = 0, html = "";
+    const container = document.getElementById('code-container');
+
+    function typeCode() {
+        if(sIdx < scripts.length) {
+            let chunk = scripts[sIdx];
+            if(chunk[cIdx] === '<') {
+                let tagEnd = chunk.indexOf('>', cIdx);
+                html += chunk.substring(cIdx, tagEnd + 1);
+                cIdx = tagEnd + 1;
+            } else {
+                html += chunk[cIdx];
+                cIdx++;
+            }
+            container.innerHTML = html;
+            if(cIdx >= chunk.length) { sIdx++; cIdx = 0; setTimeout(typeCode, 3000); }
+            else { setTimeout(typeCode, 40); }
+        } else {
+            setTimeout(() => { container.innerHTML = ""; html = ""; sIdx = 0; typeCode(); }, 10000);
+        }
+    }
+    setTimeout(typeCode, 1000);
+</script>
+</body>
+</html>
+
+<!--- FEITO POR XINOQS -->
