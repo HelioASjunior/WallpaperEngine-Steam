@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	  <meta charset="UTF-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	  <title>Cyberpunk Dev Wallpaper</title>
+	  <style>
+	    /* =============================
+	       1) HTML SCENE STRUCTURE (ROOT)
+	       ============================= */
+	    :root {
+	      --bg-1: #06060c;
+	      --bg-2: #0b0f2a;
+	      --neon-green: #4dff9e;
+	      --neon-blue: #41b9ff;
+	      --neon-purple: #9d4dff;
+	      --mx: 0;
+	      --my: 0;
+	    }
+
+	    * {
+	      box-sizing: border-box;
+	      margin: 0;
+	      padding: 0;
+	    }
+
+	    html,
+	    body {
+	      width: 100%;
+	      height: 100%;
+	      overflow: hidden;
+	      background: #04050a;
+	      font-family: Consolas, "Lucida Console", monospace;
+	    }
+
+	    #wallpaper {
+	      position: relative;
+	      width: 100vw;
+	      height: 100vh;
+	      isolation: isolate;
+	      background:
+	        radial-gradient(120% 120% at 15% 15%, rgba(77, 255, 158, 0.14), transparent 54%),
+	        radial-gradient(120% 110% at 80% 10%, rgba(157, 77, 255, 0.2), transparent 58%),
+	        radial-gradient(140% 120% at 50% 100%, rgba(65, 185, 255, 0.2), transparent 62%),
+	        linear-gradient(140deg, var(--bg-1), var(--bg-2));
+	      transform: translateZ(0);
+	    }
+
+	    .layer {
+	      position: absolute;
+	      inset: 0;
+	      pointer-events: none;
+	      will-change: transform, opacity;
+	      transform: translate3d(0, 0, 0);
+	    }
+
+	    /* =============================
+	       2) CSS STYLING AND ANIMATIONS
+	       ============================= */
+	    .grid {
+	      z-index: 1;
+	      background-image:
+	        linear-gradient(rgba(70, 255, 160, 0.07) 1px, transparent 1px),
+	        linear-gradient(90deg, rgba(70, 255, 160, 0.07) 1px, transparent 1px);
+	      background-size: 48px 48px;
+	      opacity: 0.3;
+	      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), black 38%, rgba(0, 0, 0, 0.2));
+	      animation: gridPulse 6s ease-in-out infinite;
+	    }
+
+	    .glow-fog {
+	      z-index: 2;
+	      background:
+	        radial-gradient(700px 300px at 15% 75%, rgba(77, 255, 158, 0.25), transparent 70%),
+	        radial-gradient(720px 330px at 84% 22%, rgba(157, 77, 255, 0.28), transparent 72%),
+	        radial-gradient(900px 350px at 50% 60%, rgba(65, 185, 255, 0.2), transparent 75%);
+	      filter: blur(12px);
+	      animation: driftFog 16s ease-in-out infinite alternate;
+	    }
+
+	    .code-layer {
+	      z-index: 6;
+	      opacity: 0.45;
+	      mix-blend-mode: screen;
+	      overflow: hidden;
+	    }
+
+	    .code-line {
+	      position: absolute;
+	      left: -10%;
+	      white-space: nowrap;
+	      font-size: clamp(11px, 1vw, 14px);
+	      color: rgba(150, 255, 210, 0.7);
+	      text-shadow: 0 0 12px rgba(77, 255, 158, 0.4);
+	      animation: codeFloat linear infinite;
+	    }
+
+	    .code-line.purple {
+	      color: rgba(205, 152, 255, 0.62);
+	      text-shadow: 0 0 12px rgba(157, 77, 255, 0.45);
+	    }
+
+	    .code-line.blue {
+	      color: rgba(148, 220, 255, 0.64);
+	      text-shadow: 0 0 12px rgba(65, 185, 255, 0.45);
+	    }
+
+	    .node-terminal {
+	      z-index: 8;
+	      display: grid;
+	      place-items: start start;
+	      padding: 2.2vh 2vw;
+	    }
+
+	    .terminal-panel {
+	      width: min(42vw, 640px);
+	      min-width: 300px;
+	      border-radius: 12px;
+	      overflow: hidden;
+	      border: 1px solid rgba(95, 255, 172, 0.32);
+	      background: linear-gradient(165deg, rgba(2, 15, 10, 0.88), rgba(7, 10, 24, 0.78));
+	      box-shadow: 0 0 22px rgba(77, 255, 158, 0.18), inset 0 0 18px rgba(65, 185, 255, 0.09);
+	    }
+
+	    .terminal-head {
+	      display: flex;
+	      align-items: center;
+	      gap: 8px;
+	      padding: 7px 11px;
+	      background: rgba(140, 90, 255, 0.14);
+	      border-bottom: 1px solid rgba(120, 95, 255, 0.34);
+	      color: rgba(212, 237, 255, 0.88);
+	      font-size: clamp(10px, 0.85vw, 12px);
+	    }
+
+	    .terminal-dot {
+	      width: 8px;
+	      height: 8px;
+	      border-radius: 50%;
+	      background: rgba(77, 255, 158, 0.8);
+	      box-shadow: 0 0 8px rgba(77, 255, 158, 0.5);
+	    }
+
+	    .terminal-feed {
+	      margin: 0;
+	      padding: 10px 12px;
+	      min-height: 150px;
+	      max-height: 220px;
+	      font-size: clamp(10px, 0.86vw, 12px);
+	      color: rgba(166, 255, 218, 0.94);
+	      white-space: pre;
+	      line-height: 1.35;
+	      text-shadow: 0 0 10px rgba(77, 255, 158, 0.2);
+	    }
+
+	    .terminal-symbols {
+	      z-index: 7;
+	      display: grid;
+	      place-items: center;
+	      color: rgba(170, 255, 215, 0.22);
+	      font-size: clamp(16px, 1.7vw, 24px);
+	      letter-spacing: 0.4em;
+	      text-shadow: 0 0 14px rgba(77, 255, 158, 0.38);
+	      animation: symbolBlink 3.4s ease-in-out infinite;
+	    }
+
+	    .hero {
+	      z-index: 9;
+	      display: grid;
+	      place-items: center;
+	      padding: 3vh 5vw;
+	      text-align: center;
+	    }
+
+	    .hero-title {
+	      font-size: clamp(24px, 4vw, 62px);
+	      font-weight: 800;
+	      letter-spacing: 0.06em;
+	      color: #d9ffec;
+	      text-shadow:
+	        0 0 10px rgba(77, 255, 158, 0.75),
+	        0 0 22px rgba(65, 185, 255, 0.6),
+	        0 0 38px rgba(157, 77, 255, 0.58);
+	      animation: titlePulse 4.8s ease-in-out infinite;
+	    }
+
+	    .hero-sub {
+	      margin-top: 10px;
+	      font-size: clamp(11px, 1.1vw, 16px);
+	      color: rgba(180, 255, 225, 0.9);
+	      text-shadow: 0 0 16px rgba(77, 255, 158, 0.45);
+	      opacity: 0.95;
+	    }
+
+	    .hud {
+	      z-index: 10;
+	      display: grid;
+	      place-items: end center;
+	      padding-bottom: 2.5vh;
+	    }
+
+	    .hud-panels {
+	      width: min(92vw, 1080px);
+	      display: grid;
+	      grid-template-columns: 1.6fr 1fr;
+	      gap: 12px;
+	    }
+
+	    .hud-panel {
+	      padding: 14px 18px;
+	      border-radius: 12px;
+	      border: 1px solid rgba(72, 245, 155, 0.45);
+	      background: linear-gradient(150deg, rgba(2, 14, 11, 0.74), rgba(5, 9, 26, 0.62));
+	      box-shadow: 0 0 26px rgba(77, 255, 158, 0.18), inset 0 0 22px rgba(65, 185, 255, 0.12);
+	      color: rgba(172, 255, 216, 0.95);
+	      line-height: 1.35;
+	    }
+
+	    .hud-header {
+	      font-size: clamp(12px, 1.2vw, 16px);
+	      margin-bottom: 6px;
+	      color: rgba(220, 255, 238, 0.98);
+	    }
+
+	    .hud-feed {
+	      font-size: clamp(10px, 0.95vw, 14px);
+	      white-space: pre;
+	    }
+
+	    .runtime-feed {
+	      color: rgba(197, 226, 255, 0.95);
+	      text-shadow: 0 0 12px rgba(65, 185, 255, 0.24);
+	    }
+
+	    canvas {
+	      position: absolute;
+	      inset: 0;
+	      width: 100%;
+	      height: 100%;
+	      display: block;
+	      pointer-events: none;
+	    }
+
+	    #matrixCanvas {
+	      z-index: 4;
+	      opacity: 0.78;
+	      mix-blend-mode: screen;
+	    }
+
+	    #dustCanvas {
+	      z-index: 8;
+	    }
+
+	    @keyframes gridPulse {
+	      0%,
+	      100% { opacity: 0.24; }
+	      50% { opacity: 0.38; }
+	    }
+
+	    @keyframes driftFog {
+	      0% { transform: translate3d(-1%, -0.8%, 0) scale(1.02); }
+	      100% { transform: translate3d(1.3%, 1%, 0) scale(1.05); }
+	    }
+
+	    @keyframes titlePulse {
+	      0%,
+	      100% { transform: scale(1); }
+	      50% { transform: scale(1.02); }
+	    }
+
+	    @keyframes symbolBlink {
+	      0%,
+	      100% { opacity: 0.2; }
+	      50% { opacity: 0.45; }
+	    }
+
+	    @keyframes codeFloat {
+	      from { transform: translateX(0); }
+	      to { transform: translateX(120vw); }
+	    }
+
+	    @media (max-width: 900px) {
+	      .hero-title {
+	        letter-spacing: 0.03em;
+	      }
+	      .node-terminal {
+	        padding: 1.8vh 1.8vw;
+	      }
+	      .terminal-panel {
+	        width: min(92vw, 640px);
+	      }
+	      .hud-panels {
+	        grid-template-columns: 1fr;
+	      }
+	      .hud-panel {
+	        padding: 11px 12px;
+	      }
+	    }
+	  </style>
+	</head>
+	<body>
+	  <!-- =============================
+	       1) HTML SCENE STRUCTURE
+	       ============================= -->
+	  <div id="wallpaper">
+	    <div class="layer grid" data-depth="0.02"></div>
+	    <div class="layer glow-fog" data-depth="0.04"></div>
+
+	    <canvas id="matrixCanvas"></canvas>
+
+	    <div class="layer code-layer" id="codeLayer" data-depth="0.06"></div>
+	    <div class="layer node-terminal" data-depth="0.07">
+	      <div class="terminal-panel">
+	        <div class="terminal-head"><span class="terminal-dot"></span>node build-terminal :: live simulation</div>
+	        <pre id="terminalFeed" class="terminal-feed">booting terminal...</pre>
+	      </div>
+	    </div>
+	    <div class="layer terminal-symbols" data-depth="0.08">&lt; / &gt;  _  $  #  { }  [ ]  ::</div>
+
+	    <div class="layer hero" data-depth="0.1">
+	      <div>
+	        <div class="hero-title">⚡ Dev Mode: JavaScript ⚡</div>
+	        <div class="hero-sub">const hustle = true; while (hustle) { code(); debug(); ship(); }</div>
+	      </div>
+	    </div>
+
+	    <canvas id="dustCanvas"></canvas>
+
+	    <div class="layer hud" data-depth="0.12">
+	      <div class="hud-panels">
+	        <div class="hud-panel">
+	          <div class="hud-header">LIVE LOCAL SYSTEM FEED</div>
+	          <div id="hudFeed" class="hud-feed">loading ...</div>
+	        </div>
+	        <div class="hud-panel">
+	          <div class="hud-header">JS RUNTIME METRICS</div>
+	          <div id="runtimeFeed" class="hud-feed runtime-feed">loading runtime ...</div>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+
+	  <script>
+	    "use strict";
+
+	    /* =============================
+	       3) CANVAS ENGINES (MATRIX + PARTICLES)
+	       ============================= */
+	    const wallpaper = document.getElementById("wallpaper");
+	    const matrixCanvas = document.getElementById("matrixCanvas");
+	    const dustCanvas = document.getElementById("dustCanvas");
+	    const codeLayer = document.getElementById("codeLayer");
+	    const terminalFeed = document.getElementById("terminalFeed");
+	    const hudFeed = document.getElementById("hudFeed");
+	    const runtimeFeed = document.getElementById("runtimeFeed");
+
+	    const matrixCtx = matrixCanvas.getContext("2d", { alpha: true });
+	    const dustCtx = dustCanvas.getContext("2d", { alpha: true });
+
+	    const state = {
+	      width: 0,
+	      height: 0,
+	      dpr: Math.min(window.devicePixelRatio || 1, 2),
+	      targetX: 0,
+	      targetY: 0,
+	      mouseX: 0,
+	      mouseY: 0,
+	      matrixCols: [],
+	      dust: [],
+	      hudLines: [],
+	      terminalLines: [],
+	      runtimeLast: 0,
+	      runtimeFrames: 0,
+	      fps: 0,
+	      eventLoopTicks: 0,
+	      lastT: 0
+	    };
+
+	    const MATRIX = {
+	      size: 17,
+	      charset: "01アカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ<>[]{}$#%+=",
+	      speedMin: 0.7,
+	      speedMax: 1.65
+	    };
+
+	    function mkDust() {
+	      return {
+	        x: Math.random() * state.width,
+	        y: Math.random() * state.height,
+	        r: 0.7 + Math.random() * 2,
+	        vx: (Math.random() - 0.5) * 0.16,
+	        vy: -0.08 - Math.random() * 0.12,
+	        c: Math.random()
+	      };
+	    }
+
+	    function setupMatrix() {
+	      const cols = Math.ceil(state.width / MATRIX.size);
+	      state.matrixCols = Array.from({ length: cols }, () => ({
+	        y: Math.random() * state.height,
+	        speed: MATRIX.speedMin + Math.random() * (MATRIX.speedMax - MATRIX.speedMin)
+	      }));
+	    }
+
+	    function setupDust() {
+	      const count = Math.max(90, Math.floor((state.width * state.height) / 17000));
+	      state.dust = Array.from({ length: count }, mkDust);
+	    }
+
+	    function seedCodeLines() {
+	      codeLayer.innerHTML = "";
+	      const snippets = [
+	        "import { createServer } from 'node:http';",
+	        "const res = await fetch('/api/metrics').then(r => r.json());",
+	        "const stream = await navigator.mediaDevices.getUserMedia({ video: true });",
+	        "const worker = new Worker(new URL('./worker.js', import.meta.url));",
+	        "const bytes = await crypto.subtle.digest('SHA-256', dataBuffer);",
+	        "await caches.open('v1').then(c => c.add('/offline.html'));",
+	        "for await (const chunk of readable) { parser.write(chunk); }",
+	        "const ws = new WebSocket('wss://localhost:3001/live');",
+	        "const file = await window.showOpenFilePicker();",
+	        "requestAnimationFrame(() => renderer.render(scene, camera));"
+	      ];
+
+	      for (let i = 0; i < 14; i += 1) {
+	        const line = document.createElement("div");
+	        line.className = `code-line ${i % 3 === 0 ? "purple" : i % 3 === 1 ? "blue" : ""}`.trim();
+	        line.textContent = snippets[i % snippets.length];
+	        line.style.top = `${8 + i * 6.2}%`;
+	        line.style.animationDuration = `${16 + Math.random() * 22}s`;
+	        line.style.animationDelay = `${-Math.random() * 20}s`;
+	        codeLayer.appendChild(line);
+	      }
+	    }
+
+	    function pushTerminalLog(line) {
+	      const now = new Date().toLocaleTimeString();
+	      state.terminalLines.push(`[${now}] ${line}`);
+	      if (state.terminalLines.length > 12) {
+	        state.terminalLines.shift();
+	      }
+	      terminalFeed.textContent = state.terminalLines.join("\n");
+	    }
+
+	    function seedTerminalLogs() {
+	      state.terminalLines = [];
+	      pushTerminalLog("npm run dev:node");
+	      pushTerminalLog("vite v6.2.0 building for production...");
+	      pushTerminalLog("esbuild: optimize dependencies [javascript-runtime]");
+	      pushTerminalLog("tsc --noEmit : 0 errors");
+	      pushTerminalLog("bundle: app.js 184.2kb, vendor.js 92.6kb");
+	      pushTerminalLog("build completed in 742ms");
+	      pushTerminalLog("watching for changes...");
+	    }
+
+	    function startTerminalSimulation() {
+	      const rolling = [
+	        "hmr update: src/runtime/fps-monitor.js",
+	        "lint: 0 warnings",
+	        "bundle cache hit: +68ms",
+	        "node:test api.health.spec.js (pass)",
+	        "websocket heartbeat ok",
+	        "rebuild finished in 131ms",
+	        "watch event: change detected in src/ui/hud.js"
+	      ];
+	      let idx = 0;
+	      setInterval(() => {
+	        pushTerminalLog(rolling[idx % rolling.length]);
+	        idx += 1;
+	      }, 1700);
+	    }
+
+	    function collectLocalInfo() {
+	      const n = navigator;
+	      const ua = n.userAgent || "";
+	      const platform = n.userAgentData?.platform || n.platform || "unknown";
+	      const browser = detectBrowser(ua);
+	      const engine = detectEngine(ua);
+	      const lang = n.language || "unknown";
+	      const langs = (n.languages && n.languages.length ? n.languages.slice(0, 3).join(",") : lang);
+	      const cores = n.hardwareConcurrency || "n/a";
+	      const memory = n.deviceMemory ? `${n.deviceMemory} GB` : "n/a";
+	      const screen = `${window.screen.width}x${window.screen.height} @${window.devicePixelRatio || 1}x`;
+	      const viewport = `${window.innerWidth}x${window.innerHeight}`;
+	      const vendor = n.vendor || "n/a";
+	      const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || "n/a";
+	      const tzOffset = formatUtcOffset(new Date().getTimezoneOffset());
+
+	      state.hudLines = [
+	        `TIME       : ${new Date().toLocaleTimeString()}`,
+	        `DATE       : ${new Date().toLocaleDateString()}`,
+	        `SYSTEM     : ${platform}`,
+	        `BROWSER    : ${browser}`,
+	        `ENGINE     : ${engine}`,
+	        `VENDOR     : ${vendor}`,
+	        `LANG       : ${langs}`,
+	        `CORES      : ${cores}`,
+	        `MEMORY     : ${memory}`,
+	        `SCREEN     : ${screen}`,
+	        `VIEWPORT   : ${viewport}`,
+	        `TIME ZONE  : ${tzName} (${tzOffset})`,
+	        `STATUS     : ${n.onLine ? "ONLINE" : "OFFLINE"}`
+	      ];
+	      hudFeed.textContent = state.hudLines.join("\n");
+	    }
+
+	    function formatUtcOffset(offsetMinutes) {
+	      const total = -offsetMinutes;
+	      const sign = total >= 0 ? "+" : "-";
+	      const abs = Math.abs(total);
+	      const h = String(Math.floor(abs / 60)).padStart(2, "0");
+	      const m = String(abs % 60).padStart(2, "0");
+	      return `UTC${sign}${h}:${m}`;
+	    }
+
+	    function detectBrowser(ua) {
+	      if (!ua) return "unknown";
+	      const rules = [
+	        { name: "Edge", regex: /Edg\/([\d.]+)/ },
+	        { name: "Chrome", regex: /Chrome\/([\d.]+)/ },
+	        { name: "Firefox", regex: /Firefox\/([\d.]+)/ },
+	        { name: "Safari", regex: /Version\/([\d.]+).*Safari/ },
+	        { name: "Opera", regex: /OPR\/([\d.]+)/ }
+	      ];
+	      for (const rule of rules) {
+	        const m = ua.match(rule.regex);
+	        if (m) return `${rule.name} ${m[1]}`;
+	      }
+	      return ua.slice(0, 40);
+	    }
+
+	    function detectEngine(ua) {
+	      if (/AppleWebKit/i.test(ua)) return "WebKit/Blink";
+	      if (/Gecko\//i.test(ua)) return "Gecko";
+	      if (/Trident\//i.test(ua)) return "Trident";
+	      return "unknown";
+	    }
+
+	    function resize() {
+	      state.width = window.innerWidth;
+	      state.height = window.innerHeight;
+	      state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+	      for (const canvas of [matrixCanvas, dustCanvas]) {
+	        canvas.width = Math.floor(state.width * state.dpr);
+	        canvas.height = Math.floor(state.height * state.dpr);
+	        canvas.style.width = `${state.width}px`;
+	        canvas.style.height = `${state.height}px`;
+	      }
+
+	      matrixCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+	      dustCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+	      setupMatrix();
+	      setupDust();
+	      collectLocalInfo();
+	    }
+
+	    function drawMatrix(dt) {
+	      matrixCtx.fillStyle = "rgba(3, 8, 12, 0.16)";
+	      matrixCtx.fillRect(0, 0, state.width, state.height);
+	      matrixCtx.font = `${MATRIX.size}px Consolas, monospace`;
+
+	      for (let i = 0; i < state.matrixCols.length; i += 1) {
+	        const col = state.matrixCols[i];
+	        const ch = MATRIX.charset[(Math.random() * MATRIX.charset.length) | 0];
+	        const x = i * MATRIX.size;
+	        const y = col.y;
+	        matrixCtx.fillStyle = i % 10 === 0 ? "rgba(224,255,240,0.92)" : "rgba(88,255,161,0.72)";
+	        matrixCtx.fillText(ch, x, y);
+
+	        col.y += col.speed * MATRIX.size * (dt * 60) * 0.34;
+	        if (col.y > state.height + 40 && Math.random() > 0.965) {
+	          col.y = -20;
+	          col.speed = MATRIX.speedMin + Math.random() * (MATRIX.speedMax - MATRIX.speedMin);
+	        }
+	      }
+	    }
+
+	    function updateRuntimeMetrics(nowSec) {
+	      state.runtimeFrames += 1;
+	      state.eventLoopTicks += 1;
+
+	      if (!state.runtimeLast) {
+	        state.runtimeLast = nowSec;
+	        return;
+	      }
+
+	      const elapsed = nowSec - state.runtimeLast;
+	      if (elapsed >= 0.5) {
+	        state.fps = state.runtimeFrames / elapsed;
+	        const heap = performance && performance.memory
+	          ? `${(performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(1)} MB`
+	          : "n/a";
+	        runtimeFeed.textContent = [
+	          `FPS EST    : ${state.fps.toFixed(1)}`,
+	          `LOOP TICKS : ${state.eventLoopTicks}`,
+	          `HEAP USED  : ${heap}`,
+	          `UPTIME     : ${Math.floor(nowSec)}s`,
+	          `ENGINE     : requestAnimationFrame`
+	        ].join("\n");
+
+	        state.runtimeFrames = 0;
+	        state.runtimeLast = nowSec;
+	      }
+	    }
+
+	    function drawDust(dt) {
+	      dustCtx.clearRect(0, 0, state.width, state.height);
+	      const mx = state.mouseX;
+	      const my = state.mouseY;
+
+	      for (const p of state.dust) {
+	        const dx = mx - p.x;
+	        const dy = my - p.y;
+	        const d2 = dx * dx + dy * dy;
+	        if (d2 < 260 * 260) {
+	          const d = Math.max(20, Math.sqrt(d2));
+	          const force = (1 - d / 260) * 0.013;
+	          p.vx += (dx / d) * force;
+	          p.vy += (dy / d) * force;
+	        }
+
+	        p.vx *= 0.985;
+	        p.vy *= 0.988;
+	        p.x += p.vx * (dt * 60);
+	        p.y += p.vy * (dt * 60);
+
+	        if (p.y < -10 || p.x < -20 || p.x > state.width + 20) {
+	          p.x = Math.random() * state.width;
+	          p.y = state.height + Math.random() * 20;
+	          p.vx = (Math.random() - 0.5) * 0.16;
+	          p.vy = -0.08 - Math.random() * 0.12;
+	        }
+
+	        dustCtx.fillStyle = p.c > 0.66
+	          ? "rgba(77,255,158,0.56)"
+	          : p.c > 0.33
+	            ? "rgba(65,185,255,0.5)"
+	            : "rgba(157,77,255,0.45)";
+	        dustCtx.beginPath();
+	        dustCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+	        dustCtx.fill();
+	      }
+	    }
+
+	    /* =============================
+	       4) PARALLAX SYSTEM
+	       ============================= */
+	    const parallax = Array.from(document.querySelectorAll("[data-depth]"));
+
+	    function updateParallax(dt) {
+	      const k = Math.min(1, dt * 8);
+	      state.mouseX += (state.targetX - state.mouseX) * k;
+	      state.mouseY += (state.targetY - state.mouseY) * k;
+
+	      const nx = (state.mouseX / state.width - 0.5) * 2;
+	      const ny = (state.mouseY / state.height - 0.5) * 2;
+
+	      for (const layer of parallax) {
+	        const depth = Number(layer.dataset.depth || 0);
+	        const tx = -nx * depth * 58;
+	        const ty = -ny * depth * 42;
+	        layer.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)`;
+	      }
+
+	      wallpaper.style.filter = `brightness(${(1 + ny * -0.04).toFixed(3)}) saturate(${(1 + Math.abs(nx) * 0.05).toFixed(3)})`;
+	    }
+
+	    function onPointerMove(ev) {
+	      state.targetX = ev.clientX;
+	      state.targetY = ev.clientY;
+	    }
+
+	    function onPointerLeave() {
+	      state.targetX = state.width * 0.5;
+	      state.targetY = state.height * 0.5;
+	    }
+
+	    /* =============================
+	       5) INITIALIZATION
+	       ============================= */
+	    function frame(ts) {
+	      const t = ts * 0.001;
+	      const dt = Math.min(0.033, t - state.lastT || 0.016);
+	      state.lastT = t;
+
+	      updateParallax(dt);
+	      drawMatrix(dt);
+	      drawDust(dt);
+	      updateRuntimeMetrics(t);
+
+	      requestAnimationFrame(frame);
+	    }
+
+	    function init() {
+	      resize();
+	      seedCodeLines();
+	      seedTerminalLogs();
+	      startTerminalSimulation();
+
+	      state.mouseX = state.targetX = state.width * 0.5;
+	      state.mouseY = state.targetY = state.height * 0.5;
+
+	      window.addEventListener("resize", resize, { passive: true });
+	      window.addEventListener("pointermove", onPointerMove, { passive: true });
+	      window.addEventListener("pointerleave", onPointerLeave, { passive: true });
+	      window.addEventListener("online", collectLocalInfo, { passive: true });
+	      window.addEventListener("offline", collectLocalInfo, { passive: true });
+
+	      // Update only dynamic values every second.
+	      setInterval(() => {
+	        if (state.hudLines.length > 1) {
+	          state.hudLines[0] = `TIME       : ${new Date().toLocaleTimeString()}`;
+	          state.hudLines[1] = `DATE       : ${new Date().toLocaleDateString()}`;
+	          state.hudLines[state.hudLines.length - 2] = `TIME ZONE  : ${Intl.DateTimeFormat().resolvedOptions().timeZone || "n/a"} (${formatUtcOffset(new Date().getTimezoneOffset())})`;
+	          state.hudLines[state.hudLines.length - 1] = `STATUS     : ${navigator.onLine ? "ONLINE" : "OFFLINE"}`;
+	          hudFeed.textContent = state.hudLines.join("\n");
+	        }
+	      }, 1000);
+
+	      requestAnimationFrame(frame);
+	    }
+
+	    init();
+	  </script>
+</body>
+</html>

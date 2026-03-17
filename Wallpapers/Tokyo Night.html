@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            background-color: #000000; /* Fundo preto absoluto */
+            color: #a9b1d6; /* Texto padrão Tokyo Night */
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-shadow: 0 0 5px rgba(169, 177, 214, 0.2);
+        }
+
+        .code-container { 
+            line-height: 1.6; 
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px rgba(122, 162, 247, 0.1));
+            display: inline-block;
+            text-align: left;
+        }
+
+        /* Cores Tokyo Night com efeito Glow */
+        .comment { 
+            color: #565f89; 
+            text-shadow: 0 0 10px rgba(86, 95, 137, 0.6);
+            animation: blink 3s infinite;
+        } /* Cinza azulado */
+        
+        .keyword { 
+            color: #bb9af7; 
+            text-shadow: 0 0 15px rgba(187, 154, 247, 0.8);
+        } /* Roxo (let) */
+        
+        .property { 
+            color: #7dcfff; 
+            text-shadow: 0 0 15px rgba(125, 207, 255, 0.8);
+        } /* Ciano (propriedades) */
+        
+        .number { 
+            color: #ff9e64; 
+            text-shadow: 0 0 15px rgba(255, 158, 100, 0.8);
+        } /* Laranja (números) */
+        
+        .string { 
+            color: #9ece6a; 
+            text-shadow: 0 0 15px rgba(158, 206, 106, 0.8);
+        } /* Verde (strings) */
+        
+        .punctuation { 
+            color: #89ddff; 
+            text-shadow: 0 0 8px rgba(137, 221, 255, 0.5);
+        } /* Azul claro/Ponto e vírgula */
+
+        .indent { padding-left: 45px; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="code-container">
+        <div class="comment">// tokyo_night_monitor.js</div>
+        <div><span class="keyword">let</span> <span class="property">clock</span> <span class="punctuation">= {</span></div>
+        <div class="indent"><span class="property">hour</span><span class="punctuation">:</span> <span class="number" id="hour">00</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">minute</span><span class="punctuation">:</span> <span class="number" id="minute">00</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">second</span><span class="punctuation">:</span> <span class="number" id="second">00</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">period</span><span class="punctuation">:</span> <span class="string">"</span><span id="period" class="string">--</span><span class="string">"</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">day</span><span class="punctuation">:</span> <span class="number" id="day">0</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">month</span><span class="punctuation">:</span> <span class="string">"</span><span id="month" class="string">---</span><span class="string">"</span><span class="punctuation">,</span></div>
+        <div class="indent"><span class="property">year</span><span class="punctuation">:</span> <span class="number" id="year">2026</span></div>
+        <div><span class="punctuation">};</span></div>
+    </div>
+
+    <script>
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            
+            document.getElementById('hour').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minute').textContent = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('second').textContent = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('period').textContent = hours >= 12 ? "PM" : "AM";
+            document.getElementById('day').textContent = now.getDate();
+            document.getElementById('month').textContent = months[now.getMonth()];
+            document.getElementById('year').textContent = now.getFullYear();
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
